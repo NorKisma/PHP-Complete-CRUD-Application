@@ -16,10 +16,11 @@ include "db_conn.php";
         <div class="title">
             Login Form
         </div>
-        <form action="" method="post">
+        <form action="" method="POST">
+
             <div class="field">
-                <input type="text" name="email" required>
-                <label>Email Address</label>
+                <input type="text" name="Email" required>
+                <label>email Address</label>
             </div>
             <div class="field">
                 <input type="password" name="password" required>
@@ -44,40 +45,46 @@ include "db_conn.php";
     </div>
 
     <?php
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        // Get form data and sanitize
-        $email = $conn->real_escape_string($_POST['email']);
-        $password = $conn->real_escape_string($_POST['password']);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get form data
+    $email = $_POST['Email'];
+    $password = $_POST['password'];
 
-        // SQL query to fetch user data based on email
-        $sql = "SELECT * FROM users WHERE email='$email'";
-        $result = $conn->query($sql);
+    // Hash the password for comparison (assuming passwords are stored hashed)
+    // $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Check if the query was successful
-        if ($result) {
-            // Check if user exists
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-                // Verify password
-                if (password_verify($password, $row['password'])) {
-                    // Redirect to dashboard or home page
-                    header('Location: index.php');
-                    exit(); // Stop further execution
-                
-                }
-                echo "Invalid email or password.";
-            } else {
-                echo "User not found.";
-            }
-        } else {
-            // Error handling for query execution
-            echo "Error: " . $sql . "<br>" . $conn->error;
+
+
+$sql = "SELECT ID, username, email, password FROM users WHERE email='$email'";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // Initialize a flag variable to track if the password matches
+    $password_matched = false;
+
+    // Iterate over each row in the result set
+    while ($row = $result->fetch_assoc()) {
+        // Check if the provided password matches the password stored in the database
+        if ($_POST['password'] === $row['password']) {
+            // If the passwords match, set the flag variable to true and break out of the loop
+            $password_matched = true;
+            break;
         }
-
-        // Close database connection
-        $conn->close();
     }
-?>
+
+    // Check if the password matched for any user
+    if ($password_matched) {
+        header('Location: index.php'); 
+    } else {
+        echo "Invalid password.";
+    }
+} else {
+    echo "0 results";
+}
+}
+$conn->close();
+    ?>
+
 </body>
 
 </html>
